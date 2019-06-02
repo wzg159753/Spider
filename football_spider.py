@@ -47,14 +47,15 @@ class FootBassSpider(websocket.WebSocketApp):
         # 复用父类init将参数传入
         super().__init__(**info)
 
-    def get_data(self):
+    @property
+    def _get_data(self):
         """
         构造要send的数据
         :return:
         """
         # get_market方法是获取market的id的方法
-        markets, markets2 = self.get_market()
-        outcomes = self.get_outcome()
+        markets, markets2 = self._get_market()
+        outcomes = self._get_outcome()
         five = self.get_five_ids()
 
         outcome_ids = ['{"type":"register","address":"/outcome/%s"}' % i for i in outcomes]
@@ -104,14 +105,14 @@ class FootBassSpider(websocket.WebSocketApp):
     def download(self, url):
         return requests.get(url)
 
-    def get_outcome(self):
+    def _get_outcome(self):
         url = 'https://www.betvictor56.com/bv_api/price_it_up_home_component?max_outcomes_per_event=3&max_events_per_sport=10&event_ids_to_exclude=1015843100&exclude_rank_events=true&exclude_game_events=false&sport_ids%5B%5D=100'
         response = self.download(url).json()['priceItUps']  # [0]['outcomeIds']
         data = []
         lis = [data.extend(i['outcomeIds']) for i in response]
         return data
 
-    def get_market(self):
+    def _get_market(self):
         uri = 'https://www.betvictor56.com/zh-cn/sport/football'
         resp = self.download(uri)
         html = etree.HTML(resp.text)
@@ -139,7 +140,7 @@ class FootBassSpider(websocket.WebSocketApp):
         打开ws连接，发送数据
         :return:
         """
-        data = self.get_data()
+        data = self._get_data
 
         def run(data):
             # 首先循环要发送的消息列表，将需要发送的消息发到服务器
@@ -178,9 +179,12 @@ class FootBassSpider(websocket.WebSocketApp):
         try:
             time.sleep(0.1) # 可有可无
             mg = message[2:-1].replace('\\', '')[1:-1] # 消息是一个不规则的字符串，要自己清洗
-            print(mg)
-        except:
-            print('h') # 偶尔会返回一个h
+            if mg:
+                print(mg)
+            else:
+                print('h')
+        except Exception as e:
+            logger.warning(e) # 偶尔会返回一个h
 
     def on_error(self, error):
         """
