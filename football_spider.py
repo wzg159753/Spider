@@ -59,7 +59,7 @@ class FootBassSpider(websocket.WebSocketApp):
         five = self.get_five_ids()
 
         outcome_ids = ['{"type":"register","address":"/outcome/%s"}' % i for i in outcomes]
-        market_ids = ['{"type":"register","address":"/market/%s"}' % i for i in markets]
+
         # 1
         data = [
             '{"type":"ping"}',
@@ -72,26 +72,31 @@ class FootBassSpider(websocket.WebSocketApp):
             '{"type":"send","address":"get/outcome","body":{"payload":{"ids":[66367385100,66367385300,66375635200,66375635400,66367576000,66367576100]}},"replyAddress":"43e01853-7d0a-4551-851c-997343480fbc"}',
         ]
         # 2
-        for i in market_ids:
-            data.append(i)
+
+        if markets:
+            market_ids = ['{"type":"register","address":"/market/%s"}' % i for i in markets]
+            for i in market_ids:
+                data.append(i)
 
         # 3
         # 这条数据的ids在页面能找到所有的
         # 数据1
-        data.append(
-            '{"type":"send","address":"get/outcome","body":{"payload":{"ids": %s}},"replyAddress":"1fd59598-b405-45dd-955e-e23f1dbac15e"}' % str(
-                markets2))
+        if markets2:
+
+            data.append(
+                '{"type":"send","address":"get/outcome","body":{"payload":{"ids": %s}},"replyAddress":"1fd59598-b405-45dd-955e-e23f1dbac15e"}' % str(markets2))
         # data.append('{"type":"send","address":"get/outcome","body":{"payload":{"ids":[66725095600,66725096200,66725096800,66725097400,66725960400,66725960500,66725099700,66725100300,66725100900,66725101100,66725101400,66725101700,66696924700,66696924800,66696924900,66696925100,66696924500,66696924600,66696557300,66696557500,66696556700,66696557000,66696555900,66696556300,66696173600,66696173900,66696174200,66696174500,66696536000,66696536100,66696554200,66696554500,66723859300,66723859400,66696553500,66696554000,66701323100,66701323200,66698582200,66698582300,66698582400,66698582500,66724191500,66724191600,66696181300,66696181700,66696180700,66696181000,66697550700,66697550800,66696197000,66696197400,66696536600,66696536700,66696562200,66696562500,66696561700,66696561900,66696562900,66696563200]}},"replyAddress":"23c6a4f8-dc9b-434b-96cf-84e97373378b"}')
         # print(aa)
         data.append('{"type":"register","address":"/market/undefined"}')
         # 这条数据的ids前五个id在ajax中，ajax请求数据有十条，前五条就是，后几条就是上一条数据（数据1）的ids
         # data.append('{"type":"send","address":"get/outcome","body":{"payload":{"ids":[66725096800,66725011800,66652162700,66727504000,66699127400,66725095600,66725096200,66725096800,66725097400,66725960400,66725960500,66725099700,66725100300,66725100900,66725101100,66725101400,66725101700,66696924700,66696924800,66696924900,66696925100,66696924500,66696924600,66696557300,66696557500,66696556700,66696557000,66696555900,66696556300,66696173600,66696173900,66696174200,66696174500,66696536000,66696536100,66696554200,66696554500,66723859300,66723859400,66696553500,66696554000,66701323100,66701323200,66698582200,66698582300,66698582400,66698582500,66724191500,66724191600,66696181300,66696181700,66696180700,66696181000,66697550700,66697550800,66696197000,66696197400,66696536600,66696536700,66696562200,66696562500,66696561700,66696561900,66696562900,66696563200]}},"replyAddress":"b1fa6677-6f26-4875-99ed-1323f7d3b602"}')
-        data.append(
-            '{"type":"send","address":"get/outcome","body":{"payload":{"ids": %s}},"replyAddress":"4fb49631-ad78-4c35-be6e-2cf496af8c41"}' % str(
-                five + markets2))
+        if five:
+            data.append(
+                '{"type":"send","address":"get/outcome","body":{"payload":{"ids": %s}},"replyAddress":"4fb49631-ad78-4c35-be6e-2cf496af8c41"}' % str(five + markets2))
 
-        for i in outcome_ids:
-            data.append(i)
+        if outcome_ids:
+            for i in outcome_ids:
+                data.append(i)
         # 上面都是构造的参数，还没看js，
         # 主要就是获取比赛的id 拼接成消息
         # 发送的前六条id不清楚 估计是js里面的，第七条是将前六条的outcome放到payload的ids里面
@@ -200,5 +205,5 @@ if __name__ == '__main__':
     websocket.enableTrace(True)
     # 实例化，将url和回调函数传入
     ws = FootBassSpider()
-    # 循环起来 （ws长连接核心功能）
+    # # 循环起来 （ws长连接核心功能）
     ws.run_forever()
