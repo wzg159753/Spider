@@ -73,7 +73,8 @@ class FootBassSpider(websocket.WebSocketApp):
         ]
         # 2
 
-        if markets:
+        if markets[0]:
+            print(1)
             market_ids = ['{"type":"register","address":"/market/%s"}' % i for i in markets]
             for i in market_ids:
                 data.append(i)
@@ -82,7 +83,7 @@ class FootBassSpider(websocket.WebSocketApp):
         # 这条数据的ids在页面能找到所有的
         # 数据1
         if markets2:
-
+            print(2)
             data.append(
                 '{"type":"send","address":"get/outcome","body":{"payload":{"ids": %s}},"replyAddress":"1fd59598-b405-45dd-955e-e23f1dbac15e"}' % str(markets2))
         # data.append('{"type":"send","address":"get/outcome","body":{"payload":{"ids":[66725095600,66725096200,66725096800,66725097400,66725960400,66725960500,66725099700,66725100300,66725100900,66725101100,66725101400,66725101700,66696924700,66696924800,66696924900,66696925100,66696924500,66696924600,66696557300,66696557500,66696556700,66696557000,66696555900,66696556300,66696173600,66696173900,66696174200,66696174500,66696536000,66696536100,66696554200,66696554500,66723859300,66723859400,66696553500,66696554000,66701323100,66701323200,66698582200,66698582300,66698582400,66698582500,66724191500,66724191600,66696181300,66696181700,66696180700,66696181000,66697550700,66697550800,66696197000,66696197400,66696536600,66696536700,66696562200,66696562500,66696561700,66696561900,66696562900,66696563200]}},"replyAddress":"23c6a4f8-dc9b-434b-96cf-84e97373378b"}')
@@ -105,19 +106,38 @@ class FootBassSpider(websocket.WebSocketApp):
         # 然后就是3 添加的ids也是前端里面的
         # 发送完这些还有一些数据  是ajax用普通的http请求发来的 只需要请求那条URL获取outcome_id 然后序列化参数
         ##############################################
+        print(len(data))
+        # print(outcomes)
         return data
 
-    def download(self, url):
-        return requests.get(url)
+    def download(self, url, params=None, **kwargs):
+        return requests.get(url, params=params)
 
     def _get_outcome(self):
-        url = 'https://www.betvictor56.com/bv_api/price_it_up_home_component?max_outcomes_per_event=3&max_events_per_sport=10&event_ids_to_exclude=1015843100&exclude_rank_events=true&exclude_game_events=false&sport_ids%5B%5D=100'
-        response = self.download(url).json()['priceItUps']  # [0]['outcomeIds']
+        """
+        获取第三条长数据之后的id 构成数据发送
+        :return:
+        """
+        params = {
+            'max_outcomes_per_event': '3',
+            'max_events_per_sport': '10',
+            'event_ids_to_exclude': '',
+            'exclude_rank_events': 'true',
+            'exclude_game_events': 'false',
+            'sport_ids[]': '100'
+        }
+        url = 'https://www.betvictor56.com/bv_api/price_it_up_home_component'
+        response = self.download(url, params).json()['priceItUps']  # [0]['outcomeIds']
         data = []
         lis = [data.extend(i['outcomeIds']) for i in response]
+        # print(data)
         return data
 
     def _get_market(self):
+        """
+        获取第一条长数据和第二条长数据之间的id 14..... 构成数据发送
+        :return:
+        """
         uri = 'https://www.betvictor56.com/zh-cn/sport/football'
         resp = self.download(uri)
         html = etree.HTML(resp.text)
@@ -157,8 +177,13 @@ class FootBassSpider(websocket.WebSocketApp):
             while True:
                 # 根据前端ws协议的请求间隔
                 time.sleep(5)
-                # 发送ping心跳
-                ws.send(json.dumps('{"type":"ping"}'))
+                # 发送ping心跳   这里可以异常捕获一下  因为有时候连接失败
+                # websocket._exceptions.WebSocketConnectionClosedException: Connection is already closed.
+                # 网站也是重新发送了websocket请求  data变化一下再创建ws连接
+                try:
+                    ws.send(json.dumps('{"type":"ping"}'))
+                except:
+                    ws.run_forever()
 
             # ws.close()
 
