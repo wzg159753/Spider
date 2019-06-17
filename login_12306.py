@@ -1,5 +1,6 @@
 import base64
 import requests
+from requests.sessions import cookiejar_from_dict
 from datetime import datetime
 
 
@@ -75,11 +76,16 @@ class Login12306(object):
 
     def login(self, answer):
         data = {
-            "username": "1231651",
+            "username": "13853275090",
             "password": "wzg159753",
             "appid": "otn",
             "answer": answer
         }
+        self.session.cookies.update({
+            'RAIL_DEVICEID': 'ePNYLFXq-2lSGfT8ZQDzr3NNs0GHsKmCQyw7vR3I8hGrcd03vDpXNsdgyzcH5SywJ3zm_9jGgltuz_0GYT5qz3rm8hwhDasM5L62_vkBrYJX3awQOy-Ylsi0M78I9o6EqYz0PfG0abIoExZtxkJ8mTzyg2zCyVtm',
+            'RAIL_EXPIRATION': '1560787641484',
+        })
+        print(self.session.cookies)
         url = 'https://kyfw.12306.cn/passport/web/login'
         resp = self.download(url, data=data, active='post')
         resp.encoding = 'UTF-8'
@@ -95,7 +101,7 @@ class Login12306(object):
         check = self.captcha_check(args)
         print(args)
         print(check)
-        # self.login(li)
+        self.login(args)
 
 
 if __name__ == '__main__':
@@ -124,13 +130,15 @@ if __name__ == '__main__':
 #     return int(datetime.now().timestamp() * 1000)
 #
 # session = requests.Session()
-# session.headers = headers = {
+# session.headers =  {
 #             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
 #             "Referer": "https://kyfw.12306.cn/otn/resources/login.html",
 #             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.108 Safari/537.36",
+#             "Host": "kyfw.12306.cn",
 #             # "Cookie": "RAIL_EXPIRATION=1560787641484; RAIL_DEVICEID=ePNYLFXq-2lSGfT8ZQDzr3NNs0GHsKmCQyw7vR3I8hGrcd03vDpXNsdgyzcH5SywJ3zm_9jGgltuz_0GYT5qz3rm8hwhDasM5L62_vkBrYJX3awQOy-Ylsi0M78I9o6EqYz0PfG0abIoExZtxkJ8mTzyg2zCyVtm; _passport_session=f53f3964ce834fbda52cdab3b7b392749283; _passport_ct=4eaedaf668904183a9c6fe8ef7b4ea68t2436; RAIL_EXPIRATION=1560787641484; RAIL_DEVICEID=ePNYLFXq-2lSGfT8ZQDzr3NNs0GHsKmCQyw7vR3I8hGrcd03vDpXNsdgyzcH5SywJ3zm_9jGgltuz_0GYT5qz3rm8hwhDasM5L62_vkBrYJX3awQOy-Ylsi0M78I9o6EqYz0PfG0abIoExZtxkJ8mTzyg2zCyVtm; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; _jc_save_fromDate=2019-06-14; _jc_save_toDate=2019-06-14; _jc_save_wfdc_flag=dc; route=9036359bb8a8a461c164a04f8f50b252; BIGipServerotn=2246574346.24610.0000; BIGipServerpassport=770179338.50215.0000"
 #         }
 #
+# session.get('https://kyfw.12306.cn/otn/resources/login.html')
 #
 # params = {
 #         'login_site': 'E',
@@ -149,6 +157,7 @@ if __name__ == '__main__':
 # with open('image/img_12306.jpg', 'wb') as f:
 #     f.write(data)
 #
+#
 # please = input('please enter num:')
 # args = please.split()
 # li = get_x_y(args)
@@ -164,4 +173,22 @@ if __name__ == '__main__':
 # session.params = params
 # response = session.get(url, params=params)
 # print(response.text)
+#
+# session.headers.update({'Origin': 'https://kyfw.12306.cn'})
+# session.cookies.update({
+#             'RAIL_DEVICEID': 'ePNYLFXq-2lSGfT8ZQDzr3NNs0GHsKmCQyw7vR3I8hGrcd03vDpXNsdgyzcH5SywJ3zm_9jGgltuz_0GYT5qz3rm8hwhDasM5L62_vkBrYJX3awQOy-Ylsi0M78I9o6EqYz0PfG0abIoExZtxkJ8mTzyg2zCyVtm',
+#             'RAIL_EXPIRATION': '1560787641484',
+#         })
+#
+# data = {
+#         "username": "13853275090",
+#         "password": "wzg159753",
+#         "appid": "otn",
+#         "answer": li
+#     }
+# url = 'https://kyfw.12306.cn/passport/web/login'
+# resp = session.post(url, data=data)
+# resp.encoding = 'UTF-8'
+# print(resp.text)
+
 

@@ -30,8 +30,6 @@ class GetData(object):
     """
     获取ws要发送的数据
     """
-    def __init__(self, http):
-        self.http = http
 
     def _get_data(self, markets=None, markets2=None, outcomes=None, five=None):
         """
@@ -103,7 +101,7 @@ class GetData(object):
             'exclude_game_events': 'false',
             'sport_ids[]': '100'
         }
-        url = self.http
+        url = 'https://www.betvictor56.com/bv_api/price_it_up_home_component'
         response = self.download(url, params).json()['priceItUps']  # [0]['outcomeIds']
         data = []
         lis = [data.extend(i['outcomeIds']) for i in response]
@@ -194,7 +192,7 @@ class FootWebSocket(websocket.WebSocketApp):
         :return:
         """
         # get_market方法是获取market的id的方法
-        info = GetData(url)
+        info = GetData()
         data = info.run()
         # 获取要发送的数据
         data = info._get_data(**data)
@@ -202,6 +200,7 @@ class FootWebSocket(websocket.WebSocketApp):
         def run(data):
             # 首先循环要发送的消息列表，将需要发送的消息发到服务器
             # 只发送一次，发送完成后就开始心跳检测
+            print(data)
             for i in data:
                 ws.send(json.dumps(i))
 
@@ -214,7 +213,8 @@ class FootWebSocket(websocket.WebSocketApp):
                 # 网站也是重新发送了websocket请求  data变化一下再创建ws连接
                 try:
                     ws.send(json.dumps('{"type":"ping"}'))
-                except:
+                except Exception as e:
+                    logger.error(e)
                     # 第二次请求发送的数据不一样 就是重新发送一次请求 但是发送的数据不一样
                     ws.run_forever()
 
@@ -264,3 +264,6 @@ if __name__ == '__main__':
     websocket.enableTrace(True)
     ws = FootWebSocket()
     ws.run_forever()
+    # data = GetData()
+    # print(data.run())
+
